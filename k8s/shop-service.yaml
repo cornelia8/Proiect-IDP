@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop-service
+  namespace: marketplace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shop-service
+  template:
+    metadata:
+      labels:
+        app: shop-service
+    spec:
+      containers:
+        - name: shop-service
+          image: idp_shop_service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5002
+          env:
+            - name: DATABASE_URI
+              value: postgresql://postgres:password@postgres-shopdb:5432/shop_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shop-service
+  namespace: marketplace
+spec:
+  selector:
+    app: shop-service
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002

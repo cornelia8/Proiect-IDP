@@ -1,0 +1,1 @@
+DATABASE_URI = 'postgresql://postgres:password@postgres-transactiondb:5432/transaction_db'

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.idea/
+.vscode/
+__init__.py
+*.tar.gz
+*.egg-info
+.DS_Store
+.env

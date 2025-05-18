@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  postgres-userdb:
+    image: postgres
+    container_name: postgres-userdb
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: user_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - userdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-shopdb:
+    image: postgres
+    container_name: postgres-shopdb
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: shop_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - shopdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-transactiondb:
+    image: postgres
+    container_name: postgres-transactiondb
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: transaction_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - transactiondb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user_service:
+    build:
+      context: ./user_service
+    container_name: user_service_container
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres-userdb:
+        condition: service_healthy
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@postgres-userdb:5432/user_db
+
+  shop_service:
+    build:
+      context: ./shop_service
+    container_name: shop_service_container
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres-shopdb:
+        condition: service_healthy
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@postgres-shopdb:5432/shop_db
+
+  transaction_service:
+    build:
+      context: ./transaction_service
+    container_name: transaction_service_container
+    ports:
+      - "5003:5003"
+    depends_on:
+      postgres-transactiondb:
+        condition: service_healthy
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@postgres-transactiondb:5432/transaction_db
+
+  api_gateway:
+    build:
+      context: ./api_gateway
+    container_name: api_gateway_container
+    ports:
+      - "8000:8000"
+    depends_on:
+      - user_service
+      - shop_service
+      - transaction_service
+
+  prometheus:
+    image: prom/prometheus
+    container_name: monitoring_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: monitoring_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  userdb-data:
+  shopdb-data:
+  transactiondb-data:
+  grafana-data:

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-service
+  template:
+    metadata:
+      labels:
+        app: transaction-service
+    spec:
+      containers:
+      - name: transaction-service
+        image: idp_transaction_service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5003
+        env:
+        - name: DATABASE_URI
+          value: postgresql://postgres:password@postgres-transactiondb:5432/transaction_db
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service
+spec:
+  selector:
+    app: transaction-service
+  ports:
+    - protocol: TCP
+      port: 5003
+      targetPort: 5003

@@ -1,0 +1,1 @@
+DATABASE_URI = 'postgresql://postgres:password@postgres-shopdb:5432/shop_db'

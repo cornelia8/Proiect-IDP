@@ -1,0 +1,1 @@
+DATABASE_URI = "postgresql://postgres:password@postgres-userdb:5432/user_db"
